@@ -1,0 +1,9 @@
+Request
+
+{{ email|safe }} sent us an email from space Forum
+
+{{ message|safe }}
+
+{{ name|safe }} wants to know more on solar stories.
+
+Thank you, The Solar's Team.

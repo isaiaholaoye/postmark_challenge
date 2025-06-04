@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9fafb;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Container Styling */
+        .email-container {
+            max-width: 400px;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        p {
+            font-size: 16px;
+            color: #4a5568;
+            line-height: 1.5;
+            margin: 12px 0;
+        }
+
+        /* Message Styling */
+        .message {
+            margin-top: 20px;
+            background-color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            color: #2d3748;
+        }
+
+        /* Note Styling */
+        .note {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <p>{{ email|safe }} sent us an email from Space Forum </p>
+        <div class="message">{{ message|safe }}</div>
+        <p>{{ name|safe }} wants to know more on solar stories.</p>
+        <p>Thank you, The Solar's Team.</p>
+    </div>
+</body>
+</html>
