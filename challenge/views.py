@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render
 from django.http import HttpResponse, StreamingHttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -5,6 +6,7 @@ from django.utils.html import escape
 
 from challenge.utils import inbound_notify, send_email
 from challenge.redis_client import subscribe
+from django_q.tasks import async_task
 
 
 def home(request):
@@ -12,22 +14,34 @@ def home(request):
 
 @csrf_exempt
 def submit_message(request):
+    
     if request.method == "POST":
-        msg = request.POST.get("message")
-        email = request.POST.get("email")
-        name = request. POST.get("fullname")
-        data = {"subject": msg, "email": email, "name": name}
-        send_email(data=data)
-        return HttpResponse(f"""
-            <div class="success-message">✅ Thank you {escape(name)}! Your message has been sent.</div>
-        """)
-    return HttpResponse("")
+        
+        method = request.POST
+        
+        msg, email, name, subject = method.get("message"), method.get("email"), method.get("fullname"), method.get("subject")
 
+        async_task(send_email, {"subject": subject, "email": email, "name": name, "message": msg})
+        
+        return HttpResponse(f"""<div class="success-message">✅ Thank you {escape(name)}! Your message has been sent.</div>""")
+    else:
+        return HttpResponse("")
+
+@csrf_exempt
 def inbound_webhook(request):
+    
     if request.method == "POST":
-        data = request.POST.values()
-        inbound_notify(data)
+        payload = json.loads(request.body)
+        data = {
+            "subject": payload.get("Subject"),
+            "date": payload.get("Date"),
+            "text_body": payload.get("TextBody"),
+            "ip": request.META.get('REMOTE_ADDR'),
+        }
+        async_task(inbound_notify, data)
         return HttpResponse("Message received successfully.")
+    else:
+        return HttpResponse("Invalid request method.", status=405)
 
 def sse_view(request):
     def event_stream():

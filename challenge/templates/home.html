@@ -3,16 +3,19 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Space Weather Forum 🌠</title>
+    <title>Air concern Forum 🌠</title>
     <script src="https://unpkg.com/htmx.org@2.0.4"
         integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
         crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(to right, #0b0c1e, #1c1f33);
-            color: #eee;
+            background: #fff;
+            /* ← Light background */
+            color: #222;
+            /* ← Dark text */
             display: flex;
             height: 100vh;
             overflow: hidden;
@@ -27,13 +30,14 @@
         }
 
         .left-panel {
-            background: rgba(20, 20, 30, 0.9);
-            border-right: 1px solid #444;
+            background: #3979b9;
+            border-right: 1px solid #ccc;
             justify-content: space-between;
         }
 
         .right-panel {
-            background: rgba(10, 10, 20, 0.9);
+            background: #ffffff;
+            color: #222;
             overflow-y: auto;
         }
 
@@ -46,9 +50,9 @@
 
         input,
         textarea {
-            background: #1a1d2e;
-            color: #fff;
-            border: 1px solid #555;
+            background: #fff;
+            color: #000;
+            border: 1px solid #ccc;
             border-radius: 8px;
             padding: 0.8rem;
             font-size: 1rem;
@@ -67,15 +71,6 @@
 
         button:hover {
             background: #3a72d8;
-        }
-
-        #space-weather {
-            font-size: 1.2rem;
-            padding: 1.5rem;
-            border-radius: 1rem;
-            background: #22283c;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
-            min-height: 200px;
         }
 
         #messages {
@@ -101,6 +96,7 @@
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             100% {
                 opacity: 1;
                 transform: translateY(0);
@@ -109,6 +105,18 @@
 
         h1 {
             margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+
+        canvas {
+            max-width: 100%;
+            margin-top: 1rem;
+        }
+
+        .meta {
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            color: #444;
         }
     </style>
 </head>
@@ -118,24 +126,23 @@
     <!-- Forum Form -->
     <div class="left-panel">
         <div>
-            <h1>🚀🌌🛰️✨👨‍🚀🌈🌠 Submit Your Forum</h1>
+            <h1>💬🌍🌫️ Submit Your Air Quality Report</h1>
             <form hx-post="submit/" hx-target="#messages" hx-swap="beforeend">
                 <input type="email" name="email" placeholder="example@email.com" required>
                 <input type="text" name="fullname" placeholder="John Doe" required>
-                <textarea name="message" rows="5" placeholder="Ask about the solar storm..." required></textarea>
+                <input type="text" name="subject" placeholder="Subject of your message" required maxlength="15">
+                <textarea name="message" rows="5" placeholder="Ask about the your environment air quality..." required></textarea>
                 <button type="submit">Submit</button>
             </form>
         </div>
-
-        <!-- Where Success and Messages Appear -->
         <div id="messages"></div>
     </div>
 
-    <!-- Live Space Weather View -->
+    <!-- Live air pollution view -->
     <div class="right-panel">
-        <h1>🚀🌌🛰️✨👨‍🚀🌈🌠 Let's detect your text tone with Emoji</h1>
+        <h1>🌫️📡 Real-Time Air Quality Monitor</h1>
         <div id="emojify">
-            <p>Detecting the emoji..</p>
+            <p>Detecting air quality in your environment...</p>
         </div>
     </div>
 
@@ -143,10 +150,99 @@
     <script>
         const source = new EventSource("/events/");
         source.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-            console.log("Received data:", data);
-            document.getElementById("emojify").innerHTML = data.data.subject;
+            const response = JSON.parse(event.data);
+            const data = response.data;
+            const { geo_info, date, weather_info, subject, text_body, ip } = data;
+
+            const current = weather_info.find(w => w.current)?.current[1];
+            const forecast = weather_info
+                .filter(w => Object.keys(w)[0].startsWith("forecast"))
+                .map(f => Object.values(f)[0][1]);
+
+            const pollutants = Object.keys(current);
+
+            const panel = document.querySelector(".right-panel");
+            panel.innerHTML = `
+            <h1>🌫️ Air Quality in ${geo_info.city}, ${geo_info.state_prov}, ${geo_info.country} ${geo_info.country_emoji}</h1>
+            <div class="meta">
+                <strong>📍 Coordinates:</strong> ${geo_info.latitude}, ${geo_info.longitude}<br>
+                <strong>🗺️ Continent:</strong> ${geo_info.continent_name}<br>
+                <strong>🕒 Last Update:</strong> ${date}<br>
+                <strong>💭 Subject:</strong> ${subject}<br>
+                <strong>📝 Message:</strong> ${text_body}<br>
+                <strong>🌐 IP Address:</strong> ${ip}
+            </div>
+            <canvas id="polarChart"></canvas>
+            <canvas id="lineChart"></canvas>
+        `;
+
+            const polarCtx = document.getElementById('polarChart').getContext('2d');
+            new Chart(polarCtx, {
+                type: 'polarArea',
+                data: {
+                    labels: pollutants.map(p => p.toUpperCase()),
+                    datasets: [{
+                        label: 'Current Air Pollutants',
+                        data: pollutants.map(p => current[p]),
+                        backgroundColor: generateColors(pollutants.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Current Pollution Levels (μg/m³)'
+                        }
+                    }
+                }
+            });
+
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            const forecastLabels = forecast.map((_, i) => `Day ${i + 1}`);
+            const datasets = pollutants.map((p, i) => ({
+                label: p.toUpperCase(),
+                data: forecast.map(f => f[p]),
+                borderColor: generateColors(pollutants.length)[i],
+                fill: false,
+                tension: 0.4
+            }));
+
+            new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: forecastLabels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Forecasted Pollution Trends (μg/m³)'
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'μg/m³'
+                            }
+                        }
+                    }
+                }
+            });
         };
+
+        function generateColors(n) {
+            const palette = ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff', '#ff9f40', '#c9cbcf', '#009688'];
+            return Array.from({ length: n }, (_, i) => palette[i % palette.length]);
+        }
     </script>
 
 </body>
