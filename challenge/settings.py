@@ -4,62 +4,61 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-n9c1(p5f^wubg#=w3%#wmzxydm_s1yo$m=-8jw!8q_zgzle-rh'
+SECRET_KEY = "django-insecure-n9c1(p5f^wubg#=w3%#wmzxydm_s1yo$m=-8jw!8q_zgzle-rh"
 
-DEBUG = True
+DEBUG = False
 
 # settings.py
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok.io', '2c22-102-89-69-96.ngrok-free.app']
+ALLOWED_HOSTS = ["*"]
 
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django_q'
-    
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django_q",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'challenge.urls'
+ROOT_URLCONF = "challenge.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'challenge/templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "challenge/templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'challenge.wsgi.application'
+WSGI_APPLICATION = "challenge.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -69,31 +68,31 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 ANYMAIL = {
     "POSTMARK_SERVER_TOKEN": config("POSTMARK_SERVER_TOKEN"),
@@ -104,16 +103,21 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 SENDER_EMAIL = config("SENDER_EMAIL")
 WEATHER_API_KEY = config("WEATHER_API_KEY")
 IPGEO_API_KEY = config("IPGEO_API_KEY")
+RD_HOST = config("RD_HOST")
+RD_PORT = config("RD_PORT", cast=int)
+RD_DB = config("RD_DB", cast=int)
+
 Q_CLUSTER = {
-    'name': 'DjangoQ',
-    'workers': 4,
-    'recycle': 500,
-    'timeout': 60,
-    'retry': 120,
-    'bulk': 10,
-    'orm': 'default',
-    'django_redis': 'default',
-    'save_limit': 250,
-    'cpu_affinity': 1,
-    'ack_failures': True,
+    "name": "DjangoQ",
+    "workers": 4,
+    "recycle": 500,
+    "timeout": 60,
+    "retry": 120,
+    "bulk": 10,
+    "orm": "default",
+    "django_redis": "default",
+    "save_limit": 250,
+    "cpu_affinity": 1,
+    "ack_failures": True,
+    "redis": config("REDIS_URL"),
 }
